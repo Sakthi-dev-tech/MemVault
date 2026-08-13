@@ -1,4 +1,4 @@
-# Cedis
+# MemVault
 Redis but in C++
 
 # Redis-Compatible In-Memory Datastore
