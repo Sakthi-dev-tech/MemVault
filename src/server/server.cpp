@@ -3,6 +3,7 @@
 #include <iostream>
 #include <netinet/in.h>
 #include <stdexcept>
+#include <string>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -68,6 +69,7 @@ void Server::run() {
 
     if (client_fd == -1) {
       std::cerr << "Failed to accept client\n";
+      continue; // we do not want to continue using this client socket
     }
 
     std::cout << "Client Connected!\n";
@@ -79,19 +81,30 @@ void Server::run() {
     if (bytes_received > 0) {
       std::string request(buffer, bytes_received);
 
-      std::cout << "Client says: " << request << "\n";
+      // TODO: Hard coded RESP commands, in future use it to decode
+      const std::string resp_ping = "*1\r\n$4\r\nPING\r\n";
+      const std::string inline_ping = "PING\r\n";
 
-      const std::string response = "world";
+      std::string response;
+
+      if (request == resp_ping || request == inline_ping) {
+        response = "+PONG\r\n";
+      } else {
+        response = "-ERR unknown command\r\n";
+      }
 
       if (send(client_fd, response.data(), response.size(), 0) == -1) {
-        std::cerr << "Failed to send response\n";
-      };
+        std::cerr << "Failed to send response!\n";
+      }
+
     } else if (bytes_received == 0) {
       std::cout << "Client disconnected without sending data\n";
     } else {
       std::cerr << "Failed to receive data\n";
     }
 
+    // TODO: Connection closes immediately after one response 
+    // => Support multiple requests on one conn
     close(client_fd);
   }
 }
