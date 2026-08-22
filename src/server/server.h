@@ -1,9 +1,13 @@
+#pragma once
+
 class Server {
   private:
     int port;
+    int server_fd{-1};
 
   public:
-    Server(int port);
+    explicit Server(int port);
+    ~Server();
 
     void run();
 };
