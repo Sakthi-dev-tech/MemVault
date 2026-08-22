@@ -31,12 +31,25 @@ Server::Server(int port) : port(port) {
     throw std::runtime_error("Failed to configure server socket");
   }
 
+  /*
+   * struct sockaddr_in {
+   *  uint16_t sin_family; // AF_INET
+   *  uint16_t sin_port; // port in big-endian
+   *  struct in_addr sin_addr; // IPv4
+   * }
+   *
+   * struct in_addr {
+   *  uint32_t s_addr; // IPv4 in big-endian
+   * }
+   */
   sockaddr_in address{};
 
   address.sin_family = AF_INET;
-  address.sin_port = htons(port); // Converts port into network byte order
+  address.sin_port = htons(port); // Converts port into big-endian for network byte order
   address.sin_addr.s_addr =
-      htonl(INADDR_ANY); // Accept any connection on any local IPv4 address
+      htonl(INADDR_ANY); // htonl converts the address to big-endian (Host to Network Long)
+                         // host is the CPU endian (small-endian) Network is the big-endian
+                         // Accept any connection on any local IPv4 address
 
   if (bind(server_fd,
            reinterpret_cast<const sockaddr *>(
@@ -65,7 +78,10 @@ void Server::run() {
   std::cout << "Listening on port " << port << "...\n";
 
   while (true) {
-    int client_fd = accept(server_fd, nullptr, nullptr);
+    struct sockaddr_in client_addr = {};
+    socklen_t addrlen = sizeof(client_addr);
+
+    int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &addrlen);
 
     if (client_fd == -1) {
       std::cerr << "Failed to accept client\n";
