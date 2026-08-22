@@ -6,7 +6,7 @@ class Server {
     int server_fd{-1};
 
   public:
-    explicit Server(int port);
+    explicit Server();
     ~Server();
 
     void run();

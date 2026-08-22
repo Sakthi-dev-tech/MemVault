@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-Server::Server(int port) : port(port) {
+Server::Server() {
   // Creating a server socket
   // AF_INET for IPv4 (AF_INET6 for IPv6 or dual-stack sockets)
   // SOCK_STREAM for TCP

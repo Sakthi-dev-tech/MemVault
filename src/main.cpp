@@ -7,7 +7,7 @@ int main() {
   try {
     std::cout << "MemVault is starting...\n";
 
-    Server server(6379);
+    Server server;
     std::cout << "Server socket successfully initialised and bound to port 6379!\n";
 
     server.run();
