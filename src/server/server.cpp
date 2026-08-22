@@ -45,16 +45,17 @@ Server::Server(int port) : port(port) {
   sockaddr_in address{};
 
   address.sin_family = AF_INET;
-  address.sin_port = htons(port); // Converts port into big-endian for network byte order
+  address.sin_port =
+      htons(port); // Converts port into big-endian for network byte order
   address.sin_addr.s_addr =
-      htonl(INADDR_ANY); // htonl converts the address to big-endian (Host to Network Long)
-                         // host is the CPU endian (small-endian) Network is the big-endian
-                         // Accept any connection on any local IPv4 address
+      htonl(INADDR_LOOPBACK); // htonl converts the address to big-endian (Host
+                              // to Network Long) host is the CPU endian
+                              // (small-endian) Network is the big-endian.
+                              // INADDR_LOOPBACK defines the address 127.0.0.1
 
   if (bind(server_fd,
-           reinterpret_cast<const sockaddr *>(
-               &address), // converts IPv4 address pointer into older generic
-                          // socket API pointer type
+           (const sockaddr *)&address, // converts IPv4 address pointer into
+                                       // older generic socket API pointer type
            sizeof(address)) == -1) {
     close(server_fd);
     server_fd = -1;
@@ -81,7 +82,8 @@ void Server::run() {
     struct sockaddr_in client_addr = {};
     socklen_t addrlen = sizeof(client_addr);
 
-    int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &addrlen);
+    int client_fd =
+        accept(server_fd, (struct sockaddr *)&client_addr, &addrlen);
 
     if (client_fd == -1) {
       std::cerr << "Failed to accept client\n";
@@ -119,7 +121,7 @@ void Server::run() {
       std::cerr << "Failed to receive data\n";
     }
 
-    // TODO: Connection closes immediately after one response 
+    // TODO: Connection closes immediately after one response
     // => Support multiple requests on one conn
     close(client_fd);
   }
