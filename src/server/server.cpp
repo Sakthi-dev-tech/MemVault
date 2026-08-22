@@ -8,6 +8,8 @@
 #include <unistd.h>
 
 Server::Server() {
+  port = 6379;
+
   // Creating a server socket
   // AF_INET for IPv4 (AF_INET6 for IPv6 or dual-stack sockets)
   // SOCK_STREAM for TCP
@@ -85,7 +87,7 @@ void Server::run() {
     int client_fd =
         accept(server_fd, (struct sockaddr *)&client_addr, &addrlen);
 
-    if (client_fd == -1) {
+    if (client_fd < 0) {
       std::cerr << "Failed to accept client\n";
       continue; // we do not want to continue using this client socket
     }
