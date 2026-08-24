@@ -1,30 +1,60 @@
 # MemVault
-Redis but in C++
 
-# Redis-Compatible In-Memory Datastore
+Redis, but in C++.
 
-A lightweight, Redis-compatible in-memory data structure store built entirely from scratch in modern C++. 
+MemVault is an educational in-memory datastore built from scratch in modern
+C++, with the goal of becoming compatible with Redis clients. The project
+explores systems programming topics such as TCP networking, RESP protocol
+parsing, event-driven I/O, persistence, and replication.
 
-This project serves as an educational deep-dive into systems programming, specifically designed to explore high-performance asynchronous network programming, custom protocol parsing, disk persistence mechanisms, and master-replica replication.
+> [!NOTE]
+> MemVault is in an early stage of development. It currently provides a small,
+> blocking TCP server prototype rather than a complete datastore.
 
-## 🚀 Key Features
+## Project Status
 
-*   **RESP Compatibility:** Implements the Redis Serialization Protocol (RESP), allowing seamless interaction using the standard `redis-cli` and existing Redis client libraries.
-*   **Asynchronous Networking:** Uses an event-driven, non-blocking I/O architecture (via `epoll`/`kqueue`) to efficiently manage thousands of concurrent client connections.
-*   **Core Data Structures:** Supports essential Redis data types including Strings, Lists, Hashes, and Sets.
-*   **Persistence Mechanisms:**
-    *   **Snapshotting:** Point-in-time memory dumps (similar to Redis RDB).
-    *   **Append-Only File (AOF):** Logs every write operation for robust data durability and crash recovery.
-*   **Replication:** Basic leader-follower (master-replica) state synchronization.
+### Implemented
 
-## 🎯 Educational Goals & Explorations
+- [x] IPv4 TCP server bound to `127.0.0.1:6379`
+- [x] Reusable server address through `SO_REUSEADDR`
+- [x] Sequential client connection handling with a blocking accept loop
+- [x] Basic `PING` support for RESP (`*1\r\n$4\r\nPING\r\n`) and inline requests
+- [x] RESP simple-string `+PONG` response
+- [x] RESP error response for unknown commands
+- [x] Server socket cleanup through its destructor and on initialization errors
+- [x] Small Python client for manually exercising supported responses
 
-This datastore was built to unpack the "magic" behind production-grade caching systems:
-*   **Asynchronous Network Programming:** Understanding event loops, reactor patterns, and handling partial TCP reads/writes.
-*   **Protocol Design:** Building a zero-copy (where possible) parser and serializer for streaming data over TCP.
-*   **Memory Management & Concurrency:** Designing thread-safe, low-latency access patterns for in-memory data structures.
-*   **Persistence & I/O:** Implementing background file I/O that doesn't block the main event loop during snapshots.
+### In Progress
 
-## 📄 License
+- [ ] General RESP request parsing instead of matching a hard-coded `PING`
+- [ ] Multiple requests over a persistent client connection
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Planned
+
+- [ ] Core string commands and an in-memory key-value store
+- [ ] Additional data structures such as lists, hashes, and sets
+- [ ] Non-blocking, event-driven networking with `epoll`/`kqueue`
+- [ ] Correct handling of partial TCP reads and writes
+- [ ] Snapshot persistence
+- [ ] Append-only file persistence and crash recovery
+- [ ] Leader-follower replication
+- [ ] Automated tests and a documented build workflow
+
+## Current Behavior
+
+The server listens only on the local loopback interface. It accepts one request
+per connection, responds to `PING` with `PONG`, returns an error for any other
+input, and then closes the client connection.
+
+## Educational Goals
+
+- Understand event loops, reactor patterns, and asynchronous network I/O.
+- Build a streaming RESP parser and serializer.
+- Explore low-latency access patterns and memory management for in-memory data.
+- Implement background persistence without blocking the main event loop.
+- Explore state synchronization between leader and replica nodes.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for
+details.
