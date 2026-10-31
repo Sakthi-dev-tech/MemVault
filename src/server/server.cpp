@@ -1,5 +1,6 @@
 #include "server.h"
 
+#include <cstdio>
 #include <iostream>
 #include <netinet/in.h>
 #include <stdexcept>
@@ -105,17 +106,16 @@ void Server::run() {
 
             // TODO: Hard coded RESP commands, in future use it to decode
             const std::string resp_ping = "*1\r\n$4\r\nPING\r\n";
-            const std::string inline_ping = "PING\r\n";
 
             std::string response;
 
-            if (request == resp_ping || request == inline_ping) {
+            if (request == resp_ping) {
                 response = "+PONG\r\n";
             } else {
                 response = "-ERR unknown command\r\n";
             }
 
-            std::cout << "Client says: " << response << std::endl;
+            std::printf("Client says: %s\n", response.c_str());
 
             if (send(client_fd, response.data(), response.size(), 0) == -1) {
                 std::cerr << "Failed to send response!\n";
