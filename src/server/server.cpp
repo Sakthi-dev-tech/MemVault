@@ -51,8 +51,9 @@ Server::Server() {
         htons(port); // Converts port into big-endian for network byte order
     address.sin_addr.s_addr =
         htonl(INADDR_LOOPBACK); // htonl converts the address to big-endian
-                                // (Host to Network Long) host is the CPU endian
-                                // (small-endian) Network is the big-endian.
+                                // (Host to Network Long)
+                                // host is the CPU endian (small-endian)
+                                // Network is the big-endian.
                                 // INADDR_LOOPBACK defines the address 127.0.0.1
 
     if (bind(
@@ -93,7 +94,7 @@ void Server::run() {
             continue; // we do not want to continue using this client socket
         }
 
-        std::cout << "Client Connected!\n";
+        std::cout << "Client Connected!" << std::endl;
 
         char buffer[1024]{};
 
@@ -113,6 +114,8 @@ void Server::run() {
             } else {
                 response = "-ERR unknown command\r\n";
             }
+
+            std::cout << "Client says: " << response << std::endl;
 
             if (send(client_fd, response.data(), response.size(), 0) == -1) {
                 std::cerr << "Failed to send response!\n";
