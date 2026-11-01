@@ -131,3 +131,11 @@ void Server::run() {
         close(client_fd);
     }
 }
+
+int32_t Server::read_full(int fd, char* buf, size_t n) {
+    return 0;
+}
+
+int32_t Server::write_full(int fd, char* buf, size_t n) {
+    return 0;
+}
