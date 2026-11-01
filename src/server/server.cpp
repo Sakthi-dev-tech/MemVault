@@ -1,13 +1,20 @@
 #include "server.h"
 
 #include <cassert>
+#include <cerrno>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <netinet/in.h>
 #include <stdexcept>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
+
+static void error_msg(const char* msg) {
+    fprintf(stderr, "%s", msg);
+}
 
 Server::Server() {
     port = 6379;
@@ -111,6 +118,47 @@ int32_t Server::write_full(int fd, char* buf, size_t n) {
     }
 
     return 0;
+}
+
+const size_t k_max_msg = 4096;
+
+int32_t Server::one_request(int connfd) {
+    // inlcuding a 4 bytes header
+    char rbuf[4 + k_max_msg];
+    errno = 0; // set to 0 manually as it is not reset after a successful syscall
+    int32_t err = read(connfd, rbuf, 4);
+
+    if (err) {
+        error_msg(errno == 0 ? "EOF" : "Error in read() function");
+    }
+    uint32_t len = 0;
+    memcpy(&len, rbuf, 4); // assuming little endian here
+
+    if (len > k_max_msg) {
+        error_msg("Message too long");
+        return -1;
+    }
+
+    // read request body
+    err = read_full(connfd, &rbuf[4], len);
+    if (err) {
+        error_msg("Error in read()");
+        return err;
+    }
+
+    // Do something with the message
+    printf("Client says: %.*s\n", len, &rbuf[4]);
+
+    // reply using same protocol
+    const char reply[] = "world";
+
+    char wbuf[4 + sizeof(reply)];
+    len = (uint32_t) strlen(reply);
+
+    memcpy(wbuf, &len, 4);
+    memcpy(&wbuf[4], reply, len);
+
+    return write_full(connfd, wbuf, 4 + len);
 }
 
 void Server::run() {

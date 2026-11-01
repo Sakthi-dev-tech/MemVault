@@ -14,6 +14,8 @@ class Server {
     static int32_t read_full(int fd, char* buf, size_t n);
     static int32_t write_full(int fd, char* buf, size_t n);
 
+    static int32_t one_request(int connfd);
+
     void run();
 
     ~Server();
