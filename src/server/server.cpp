@@ -1,5 +1,7 @@
 #include "server.h"
 
+#include <cassert>
+#include <cstddef>
 #include <cstdio>
 #include <netinet/in.h>
 #include <stdexcept>
@@ -80,10 +82,34 @@ Server::~Server() {
 }
 
 int32_t Server::read_full(int fd, char* buf, size_t n) {
+    while (n > 0) {
+        ssize_t rv = read(fd, buf, n);
+
+        if (rv <= 0) {
+            return -1; // error
+        }
+
+        assert((size_t) rv <= n);
+        n -= (size_t) rv; // Update the number of remaining bytes to be read
+        buf += rv; // add the read value to the buffer
+    }
+
     return 0;
 }
 
 int32_t Server::write_full(int fd, char* buf, size_t n) {
+    while (n > 0) {
+        ssize_t rv = write(fd, buf, n);
+
+        if (rv <= 0) {
+            return -1; // error
+        }
+
+        assert((size_t) rv <= n);
+        n -= (size_t) rv; // Update the number of remaining bytes to be read
+        buf += rv; // add the read value to the buffer
+    }
+
     return 0;
 }
 
