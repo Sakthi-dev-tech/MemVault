@@ -79,6 +79,14 @@ Server::~Server() {
     }
 }
 
+int32_t Server::read_full(int fd, char* buf, size_t n) {
+    return 0;
+}
+
+int32_t Server::write_full(int fd, char* buf, size_t n) {
+    return 0;
+}
+
 void Server::run() {
     printf("Listening on port %d\n", port);
 
@@ -130,12 +138,4 @@ void Server::run() {
         // => Support multiple requests on one conn
         close(client_fd);
     }
-}
-
-int32_t Server::read_full(int fd, char* buf, size_t n) {
-    return 0;
-}
-
-int32_t Server::write_full(int fd, char* buf, size_t n) {
-    return 0;
 }
