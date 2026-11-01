@@ -1,21 +1,20 @@
 #include "server/server.h"
 
 #include <exception>
-#include <iostream>
 
 int main() {
     try {
-        std::cout << "MemVault is starting...\n";
+        printf("MemVault is starting...\n");
 
         Server server;
-        std::cout << "Server socket successfully initialised and bound to port "
-                     "6379!\n";
+        printf("Server socket successfully initialised and bound to port %d\n", 6379);
 
         server.run();
-        std::cout << "Listening on port 6379...\n";
+        printf("Listening on port 6379...\n");
+
 
     } catch (const std::exception &error) {
-        std::cerr << "Server error: " << error.what() << "\n";
+        fprintf(stderr, "Server error: %s", error.what());
         return 1;
     }
 

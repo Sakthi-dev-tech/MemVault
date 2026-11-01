@@ -1,7 +1,6 @@
 #include "server.h"
 
 #include <cstdio>
-#include <iostream>
 #include <netinet/in.h>
 #include <stdexcept>
 #include <string>
@@ -81,7 +80,7 @@ Server::~Server() {
 }
 
 void Server::run() {
-    std::cout << "Listening on port " << port << "...\n";
+    printf("Listening on port %d\n", port);
 
     while (true) {
         struct sockaddr_in client_addr = {};
@@ -91,11 +90,11 @@ void Server::run() {
             accept(server_fd, (struct sockaddr *)&client_addr, &addrlen);
 
         if (client_fd < 0) {
-            std::cerr << "Failed to accept client\n";
+            fprintf(stderr, "Failed to accept client\n");
             continue; // we do not want to continue using this client socket
         }
 
-        std::cout << "Client Connected!" << std::endl;
+        printf("Client Connected!\n");
 
         char buffer[1024]{};
 
@@ -118,13 +117,13 @@ void Server::run() {
             std::printf("Client says: %s\n", response.c_str());
 
             if (send(client_fd, response.data(), response.size(), 0) == -1) {
-                std::cerr << "Failed to send response!\n";
+                fprintf(stderr, "Failed to send response!\n"); 
             }
 
         } else if (bytes_received == 0) {
-            std::cout << "Client disconnected without sending data\n";
+            printf("Client disconnected without sending data\n");
         } else {
-            std::cerr << "Failed to receive data\n";
+            fprintf(stderr, "Failed to receive data\n");
         }
 
         // TODO: Connection closes immediately after one response
