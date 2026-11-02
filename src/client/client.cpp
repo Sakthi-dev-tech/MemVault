@@ -101,7 +101,7 @@ int main() {
 
     struct sockaddr_in addr = {};
     addr.sin_family = AF_INET;
-    addr.sin_port = ntohs(1234);
+    addr.sin_port = ntohs(6379);
     addr.sin_addr.s_addr = ntohl(INADDR_LOOPBACK);  // 127.0.0.1
     int rv = connect(fd, (const struct sockaddr *)&addr, sizeof(addr));
     if (rv) {
@@ -109,15 +109,11 @@ int main() {
     }
 
     // multiple requests
-    int32_t err = query(fd, "hello1");
+    int32_t err = query(fd, "*1\r\n$4\r\nPING\r\n");
     if (err) {
         return trigger_done(fd);
     }
-    err = query(fd, "hello2");
-    if (err) {
-        return trigger_done(fd);
-    }
-    err = query(fd, "hello3");
+    err = query(fd, "unknown command");
     if (err) {
         return trigger_done(fd);
     }
