@@ -6,7 +6,6 @@
 #include <cstring>
 #include <netinet/in.h>
 #include <stdexcept>
-#include <string>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -114,10 +113,11 @@ int32_t one_request(int connfd) {
     // inlcuding a 4 bytes header
     char rbuf[4 + k_max_msg];
     errno = 0; // set to 0 manually as it is not reset after a successful syscall
-    int32_t err = read(connfd, rbuf, 4);
+    int32_t err = read_full(connfd, rbuf, 4);
 
     if (err) {
         error_msg(errno == 0 ? "EOF" : "Error in read() function");
+        return err;
     }
     uint32_t len = 0;
     memcpy(&len, rbuf, 4); // assuming little endian here
@@ -166,38 +166,13 @@ static void run_server(int server_fd, int port) {
 
         printf("Client Connected!\n");
 
-        char buffer[1024]{};
-
-        ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer), 0);
-
-        if (bytes_received > 0) {
-            std::string request(buffer, bytes_received);
-
-            // TODO: Hard coded RESP commands, in future use it to decode
-            const std::string resp_ping = "*1\r\n$4\r\nPING\r\n";
-
-            std::string response;
-
-            if (request == resp_ping) {
-                response = "+PONG\r\n";
-            } else {
-                response = "-ERR unknown command\r\n";
+        while (true) {
+            int32_t err = one_request(client_fd);
+            if (err) {
+                break;
             }
-
-            std::printf("Client says: %s\n", response.c_str());
-
-            if (send(client_fd, response.data(), response.size(), 0) == -1) {
-                fprintf(stderr, "Failed to send response!\n"); 
-            }
-
-        } else if (bytes_received == 0) {
-            printf("Client disconnected without sending data\n");
-        } else {
-            fprintf(stderr, "Failed to receive data\n");
         }
 
-        // TODO: Connection closes immediately after one response
-        // => Support multiple requests on one conn
         close(client_fd);
     }
 }
