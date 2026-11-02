@@ -21,7 +21,7 @@ parsing, event-driven I/O, persistence, and replication.
 - [x] Basic `PING` support for RESP (`*1\r\n$4\r\nPING\r\n`) and inline requests
 - [x] RESP simple-string `+PONG` response
 - [x] RESP error response for unknown commands
-- [x] Server socket cleanup through its destructor and on initialization errors
+- [x] Server socket cleanup on exit from the server loop and on initialization errors
 - [x] Small Python client for manually exercising supported responses
 
 ### In Progress
@@ -38,7 +38,22 @@ parsing, event-driven I/O, persistence, and replication.
 - [ ] Snapshot persistence
 - [ ] Append-only file persistence and crash recovery
 - [ ] Leader-follower replication
-- [ ] Automated tests and a documented build workflow
+- [ ] Automated tests
+
+## Build and Run
+
+Compile the server directly from its single source file, then start it:
+
+```sh
+g++ -std=c++17 -Wall -Wextra -pedantic src/server/server.cpp -o /tmp/memvault-server
+/tmp/memvault-server
+```
+
+From another terminal, run the example client:
+
+```sh
+python3 test/client.py
+```
 
 ## Current Behavior
 

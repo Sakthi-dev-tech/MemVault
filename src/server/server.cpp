@@ -1,5 +1,3 @@
-#include "server.h"
-
 #include <cassert>
 #include <cerrno>
 #include <cstddef>
@@ -16,14 +14,12 @@ static void error_msg(const char* msg) {
     fprintf(stderr, "%s", msg);
 }
 
-Server::Server() {
-    port = 6379;
-
+static int create_server_socket(int port) {
     // Creating a server socket
     // AF_INET for IPv4 (AF_INET6 for IPv6 or dual-stack sockets)
     // SOCK_STREAM for TCP
     // protocol set to 0 for auto
-    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (server_fd == -1) {
         throw std::runtime_error("Failed to create server socket");
@@ -38,7 +34,6 @@ Server::Server() {
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) ==
         -1) {
         close(server_fd);
-        server_fd = -1;
         throw std::runtime_error("Failed to configure server socket");
     }
 
@@ -71,24 +66,17 @@ Server::Server() {
                                         // older generic socket API pointer type
             sizeof(address)) == -1) {
         close(server_fd);
-        server_fd = -1;
         throw std::runtime_error("Failed to bind server socket");
     }
 
     if (listen(server_fd, SOMAXCONN) == -1) {
         close(server_fd);
-        server_fd = -1;
         throw std::runtime_error("Failed to listen on server socket!");
     }
+    return server_fd;
 }
 
-Server::~Server() {
-    if (server_fd != -1) {
-        close(server_fd);
-    }
-}
-
-int32_t Server::read_full(int fd, char* buf, size_t n) {
+int32_t read_full(int fd, char* buf, size_t n) {
     while (n > 0) {
         ssize_t rv = read(fd, buf, n);
 
@@ -104,7 +92,7 @@ int32_t Server::read_full(int fd, char* buf, size_t n) {
     return 0;
 }
 
-int32_t Server::write_full(int fd, char* buf, size_t n) {
+int32_t write_full(int fd, char* buf, size_t n) {
     while (n > 0) {
         ssize_t rv = write(fd, buf, n);
 
@@ -122,7 +110,7 @@ int32_t Server::write_full(int fd, char* buf, size_t n) {
 
 const size_t k_max_msg = 4096;
 
-int32_t Server::one_request(int connfd) {
+int32_t one_request(int connfd) {
     // inlcuding a 4 bytes header
     char rbuf[4 + k_max_msg];
     errno = 0; // set to 0 manually as it is not reset after a successful syscall
@@ -161,7 +149,7 @@ int32_t Server::one_request(int connfd) {
     return write_full(connfd, wbuf, 4 + len);
 }
 
-void Server::run() {
+static void run_server(int server_fd, int port) {
     printf("Listening on port %d\n", port);
 
     while (true) {
@@ -212,4 +200,27 @@ void Server::run() {
         // => Support multiple requests on one conn
         close(client_fd);
     }
+}
+
+int main() {
+    constexpr int port = 6379;
+    int server_fd = -1;
+
+    try {
+        printf("MemVault is starting...\n");
+
+        server_fd = create_server_socket(port);
+        printf("Server socket successfully initialised and bound to port %d\n", port);
+
+        run_server(server_fd, port);
+    } catch (const std::exception &error) {
+        if (server_fd != -1) {
+            close(server_fd);
+        }
+        fprintf(stderr, "Server error: %s\n", error.what());
+        return 1;
+    }
+
+    close(server_fd);
+    return 0;
 }
