@@ -109,10 +109,16 @@ int main() {
     }
 
     // multiple requests
-    int32_t err = query(fd, "*1\r\n$4\r\nPING\r\n");
+    int32_t err = query(fd, "hello1");
     if (err) {
         return trigger_done(fd);
     }
+
+    err = query(fd, "hello2");
+    if (err) {
+        return trigger_done(fd);
+    }
+
     err = query(fd, "unknown command");
     if (err) {
         return trigger_done(fd);
