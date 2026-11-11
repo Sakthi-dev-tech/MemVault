@@ -9,11 +9,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-static void error_msg(const char* msg) {
+void error_msg(const char* msg) {
     fprintf(stderr, "%s", msg);
 }
 
-static int create_server_socket(int port) {
+int create_server_socket(int port) {
     // Creating a server socket
     // AF_INET for IPv4 (AF_INET6 for IPv6 or dual-stack sockets)
     // SOCK_STREAM for TCP
@@ -157,7 +157,7 @@ int32_t one_request(int connfd) {
     return write_full(connfd, wbuf, 4 + len);
 }
 
-static void run_server(int server_fd, int port) {
+void run_server(int server_fd, int port) {
     printf("Listening on port %d\n", port);
 
     while (true) {
