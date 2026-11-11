@@ -79,13 +79,21 @@ int32_t read_full(int fd, char* buf, size_t n) {
     while (n > 0) {
         ssize_t rv = read(fd, buf, n);
 
-        if (rv <= 0) {
+        if (rv < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+
             return -1; // error
+        }
+
+        if (rv == 0) {
+            return 1; // EOF before all bytes were read
         }
 
         assert((size_t) rv <= n);
         n -= (size_t) rv; // Update the number of remaining bytes to be read
-        buf += rv; // add the read value to the buffer
+        buf += rv; // Advance to the next position to write into
     }
 
     return 0;

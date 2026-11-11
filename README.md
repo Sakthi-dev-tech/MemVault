@@ -42,6 +42,29 @@ parsing, event-driven I/O, persistence, and replication.
 
 ## Build and Run
 
+With Zig 0.17.0, build both C++ programs:
+
+```sh
+zig build
+```
+
+The executables are written to `zig-out/bin/memvault-server` and
+`zig-out/bin/memvault-client`. Run them in separate terminals:
+
+```sh
+zig build run-server
+```
+
+```sh
+zig build run-client
+```
+
+Use `zig build -Doptimize=fast` for an optimized build. These programs
+use POSIX sockets and require a POSIX target such as Linux or macOS.
+
+The C++ client matches the server's current length-prefixed protocol. The Python
+client below uses RESP and is retained for the planned Redis-compatible protocol.
+
 Compile the server directly from its single source file, then start it:
 
 ```sh
