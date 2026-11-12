@@ -5,8 +5,8 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const programs = .{
-        .{ "server", "src/server/server.cpp" },
-        .{ "client", "src/client/client.cpp" },
+        .{ .name = "server", .sources = &.{"src/server/server.cpp"} },
+        .{ .name = "client", .sources = &.{"src/client/client.cpp"} },
     };
 
     inline for (programs) |program| {
@@ -16,19 +16,19 @@ pub fn build(b: *std.Build) void {
             .link_libc = true,
             .link_libcpp = true,
         });
-        module.addCSourceFile(.{
-            .file = b.path(program[1]),
+        module.addCSourceFiles(.{
+            .files = program.sources,
             .flags = &.{ "-Wall", "-Wextra", "-pedantic" },
         });
 
         const exe = b.addExecutable(.{
-            .name = "memvault-" ++ program[0],
+            .name = "memvault-" ++ program.name,
             .root_module = module,
         });
         b.installArtifact(exe);
 
         const run = b.addRunArtifact(exe);
-        const run_step = b.step("run-" ++ program[0], "Run the MemVault " ++ program[0]);
+        const run_step = b.step("run-" ++ program.name, "Run the MemVault " ++ program.name);
         run_step.dependOn(&run.step);
     }
 }
